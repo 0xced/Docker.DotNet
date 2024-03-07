@@ -7,6 +7,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Net.Sockets;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Net.Http.Client;
@@ -52,6 +53,10 @@ namespace Docker.DotNet
             switch (uri.Scheme.ToLowerInvariant())
             {
                 case "npipe":
+                    if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                    {
+                        throw new PlatformNotSupportedException("The npipe scheme is only supported on Windows");
+                    }
                     if (Configuration.Credentials.IsTlsCredentials())
                     {
                         throw new Exception("TLS not supported over npipe");
@@ -77,7 +82,9 @@ namespace Docker.DotNet
                     {
                         var timeout = (int)Configuration.NamedPipeConnectTimeout.TotalMilliseconds;
                         var stream = new NamedPipeClientStream(serverName, pipeName, PipeDirection.InOut, PipeOptions.Asynchronous);
+#pragma warning disable CA1416
                         var dockerStream = new DockerPipeStream(stream);
+#pragma warning restore CA1416
 
                         await stream.ConnectAsync(timeout, cancellationToken)
                             .ConfigureAwait(false);

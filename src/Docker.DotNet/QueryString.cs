@@ -78,7 +78,7 @@ namespace Docker.DotNet
                 GetKeyValuePairs().Select(
                     pair => string.Join("&",
                         pair.Value.Select(
-                            v => $"{Uri.EscapeUriString(pair.Key)}={Uri.EscapeDataString(v)}"))));
+                            v => $"{Uri.EscapeDataString(pair.Key)}={Uri.EscapeDataString(v)}"))));
         }
 
         private string[] ConvertValue(IQueryStringConverter converter, object value)
@@ -148,7 +148,7 @@ namespace Docker.DotNet
         {
             return string.Join("&",
                         _data.Select(
-                            v => $"{Uri.EscapeUriString(_key)}={Uri.EscapeDataString(v)}"));
+                            v => $"{Uri.EscapeDataString(_key)}={Uri.EscapeDataString(v)}"));
         }
     }
 }

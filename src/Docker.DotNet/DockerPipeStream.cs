@@ -8,6 +8,9 @@ using Microsoft.Net.Http.Client;
 
 namespace Docker.DotNet
 {
+#if !NETSTANDARD
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
+#endif
     internal class DockerPipeStream : WriteClosableStream, IPeekableStream
     {
         private readonly PipeStream _stream;

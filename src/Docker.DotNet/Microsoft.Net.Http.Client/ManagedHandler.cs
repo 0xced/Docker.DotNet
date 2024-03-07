@@ -179,7 +179,9 @@ namespace Microsoft.Net.Http.Client
             if (request.IsHttps())
             {
                 SslStream sslStream = new SslStream(transport, false, ServerCertificateValidationCallback);
+#pragma warning disable SYSLIB0039
                 await sslStream.AuthenticateAsClientAsync(request.GetHostProperty(), ClientCertificates, SslProtocols.Tls12 | SslProtocols.Tls11 | SslProtocols.Tls, false);
+#pragma warning restore SYSLIB0039
                 transport = sslStream;
             }
 
@@ -247,7 +249,7 @@ namespace Microsoft.Net.Http.Client
                 }
                 else
                 {
-                    pathAndQuery = Uri.EscapeUriString(request.RequestUri.ToString());
+                    pathAndQuery = Uri.EscapeDataString(request.RequestUri.ToString());
                 }
                 request.SetPathAndQueryProperty(pathAndQuery);
             }

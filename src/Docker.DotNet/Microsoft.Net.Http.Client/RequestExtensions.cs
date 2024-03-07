@@ -85,6 +85,7 @@ namespace Microsoft.Net.Http.Client
             request.SetProperty("url.AddressLine", addressLine);
         }
 
+#if NETSTANDARD
         public static T GetProperty<T>(this HttpRequestMessage request, string key)
         {
             object obj;
@@ -99,5 +100,16 @@ namespace Microsoft.Net.Http.Client
         {
             request.Properties[key] = value;
         }
+#else
+        public static T GetProperty<T>(this HttpRequestMessage request, string key)
+        {
+            return request.Options.TryGetValue(new HttpRequestOptionsKey<T>(key), out var obj) ? obj : default;
+        }
+
+        public static void SetProperty<T>(this HttpRequestMessage request, string key, T value)
+        {
+            request.Options.Set(new HttpRequestOptionsKey<T>(key), value);
+        }
+#endif
     }
 }
