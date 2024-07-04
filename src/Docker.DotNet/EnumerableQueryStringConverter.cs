@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -31,7 +31,7 @@ namespace Docker.DotNet
                 }
                 else
                 {
-                    items.Add(System.Text.Json.JsonSerializer.Serialize(e));
+                    throw new NotSupportedException("Conversion is only supported for enumerable of value types or strings");
                 }
             }
 

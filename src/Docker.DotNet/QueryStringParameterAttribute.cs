@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace Docker.DotNet
@@ -16,7 +17,7 @@ namespace Docker.DotNet
         {
         }
 
-        public QueryStringParameterAttribute(string name, bool required, Type converterType)
+        public QueryStringParameterAttribute(string name, bool required, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] Type converterType)
         {
             if (string.IsNullOrEmpty(name))
             {

@@ -18,7 +18,7 @@ namespace Docker.DotNet
 
         async Task<IList<Secret>> ISecretsOperations.ListAsync(CancellationToken cancellationToken)
         {
-            return await this._client.MakeRequestAsync<IList<Secret>>(this._client.NoErrorHandlers, HttpMethod.Get, "secrets", cancellationToken).ConfigureAwait(false);
+            return await this._client.MakeRequestAsync(this._client.NoErrorHandlers, HttpMethod.Get, "secrets", DockerJsonSerializerContext.Default.SecretArray, cancellationToken).ConfigureAwait(false);
         }
 
         async Task<SecretCreateResponse> ISecretsOperations.CreateAsync(SecretSpec body, CancellationToken cancellationToken)
@@ -28,8 +28,8 @@ namespace Docker.DotNet
                 throw new ArgumentNullException(nameof(body));
             }
 
-            var data = new JsonRequestContent<SecretSpec>(body, this._client.JsonSerializer);
-            return await this._client.MakeRequestAsync<SecretCreateResponse>(this._client.NoErrorHandlers, HttpMethod.Post, "secrets/create", null, data, cancellationToken).ConfigureAwait(false);
+            var data = JsonRequestContent.Create(body, this._client.JsonSerializer, DockerJsonSerializerContext.Default.SecretSpec);
+            return await this._client.MakeRequestAsync(this._client.NoErrorHandlers, HttpMethod.Post, "secrets/create", null, data, DockerJsonSerializerContext.Default.SecretCreateResponse, cancellationToken).ConfigureAwait(false);
         }
 
         async Task<Secret> ISecretsOperations.InspectAsync(string id, CancellationToken cancellationToken)
@@ -39,7 +39,7 @@ namespace Docker.DotNet
                 throw new ArgumentNullException(nameof(id));
             }
 
-            return await this._client.MakeRequestAsync<Secret>(this._client.NoErrorHandlers, HttpMethod.Get, $"secrets/{id}", cancellationToken).ConfigureAwait(false);
+            return await this._client.MakeRequestAsync(this._client.NoErrorHandlers, HttpMethod.Get, $"secrets/{id}", DockerJsonSerializerContext.Default.Secret, cancellationToken).ConfigureAwait(false);
         }
 
         Task ISecretsOperations.DeleteAsync(string id, CancellationToken cancellationToken)

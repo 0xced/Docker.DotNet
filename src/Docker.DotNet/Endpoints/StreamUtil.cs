@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
 using System.Text;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -26,22 +27,22 @@ namespace Docker.DotNet.Models
             }
         }
 
-        internal static async Task MonitorStreamForMessagesAsync<T>(Task<Stream> streamTask, DockerClient client, CancellationToken cancellationToken, IProgress<T> progress)
+        internal static async Task MonitorStreamForMessagesAsync<T>(Task<Stream> streamTask, DockerClient client, JsonTypeInfo<T> typeInfo, CancellationToken cancellationToken, IProgress<T> progress)
         {
             using (var stream = await streamTask)
             {
-                await foreach (var ev in client.JsonSerializer.Deserialize<T>(stream, cancellationToken))
+                await foreach (var ev in client.JsonSerializer.Deserialize(stream, typeInfo, cancellationToken))
                 {
                     progress.Report(ev);
                 }
             }
         }
 
-        internal static async Task MonitorResponseForMessagesAsync<T>(Task<HttpResponseMessage> responseTask, DockerClient client, CancellationToken cancel, IProgress<T> progress)
+        internal static async Task MonitorResponseForMessagesAsync<T>(Task<HttpResponseMessage> responseTask, DockerClient client, JsonTypeInfo<T> typeInfo, CancellationToken cancel, IProgress<T> progress)
         {
             using (var response = await responseTask)
             {
-                await MonitorStreamForMessagesAsync<T>(response.Content.ReadAsStreamAsync(), client, cancel, progress);
+                await MonitorStreamForMessagesAsync(response.Content.ReadAsStreamAsync(), client, typeInfo, cancel, progress);
             }
         }
     }

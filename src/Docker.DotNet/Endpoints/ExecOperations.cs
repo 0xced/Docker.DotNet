@@ -36,8 +36,8 @@ namespace Docker.DotNet
                 throw new ArgumentNullException(nameof(parameters));
             }
 
-            var data = new JsonRequestContent<ContainerExecCreateParameters>(parameters, this._client.JsonSerializer);
-            return await this._client.MakeRequestAsync<ContainerExecCreateResponse>(new[] { NoSuchContainerHandler }, HttpMethod.Post, $"containers/{id}/exec", null, data, cancellationToken).ConfigureAwait(false);
+            var data = JsonRequestContent.Create(parameters, this._client.JsonSerializer, DockerJsonSerializerContext.Default.ContainerExecCreateParameters);
+            return await this._client.MakeRequestAsync(new[] { NoSuchContainerHandler }, HttpMethod.Post, $"containers/{id}/exec", null, data, DockerJsonSerializerContext.Default.ContainerExecCreateResponse, cancellationToken).ConfigureAwait(false);
         }
 
         public async Task<ContainerExecInspectResponse> InspectContainerExecAsync(string id, CancellationToken cancellationToken)
@@ -47,7 +47,7 @@ namespace Docker.DotNet
                 throw new ArgumentNullException(nameof(id));
             }
 
-            return await this._client.MakeRequestAsync<ContainerExecInspectResponse>(new[] { NoSuchContainerHandler }, HttpMethod.Get, $"exec/{id}/json", null, cancellationToken).ConfigureAwait(false);
+            return await this._client.MakeRequestAsync(new[] { NoSuchContainerHandler }, HttpMethod.Get, $"exec/{id}/json", DockerJsonSerializerContext.Default.ContainerExecInspectResponse, cancellationToken).ConfigureAwait(false);
         }
 
         public Task ResizeContainerExecTtyAsync(string id, ContainerResizeParameters parameters, CancellationToken cancellationToken)
@@ -79,7 +79,7 @@ namespace Docker.DotNet
             {
                 Detach = true,
             };
-            var data = new JsonRequestContent<ContainerExecStartParameters>(parameters, this._client.JsonSerializer);
+            var data = JsonRequestContent.Create(parameters, this._client.JsonSerializer, DockerJsonSerializerContext.Default.ContainerExecStartParameters);
             return this._client.MakeRequestAsync(new[] { NoSuchContainerHandler }, HttpMethod.Post, $"exec/{id}/start", null, data, cancellationToken);
         }
 
@@ -97,7 +97,7 @@ namespace Docker.DotNet
                 throw new ArgumentNullException(nameof(id));
             }
 
-            var data = new JsonRequestContent<ContainerExecStartParameters>(eConfig, this._client.JsonSerializer);
+            var data = JsonRequestContent.Create(eConfig, this._client.JsonSerializer, DockerJsonSerializerContext.Default.ContainerExecStartParameters);
             var stream = await this._client.MakeRequestForHijackedStreamAsync(new[] { NoSuchContainerHandler }, HttpMethod.Post, $"exec/{id}/start", null, data, null, cancellationToken).ConfigureAwait(false);
             if (!stream.CanCloseWrite)
             {

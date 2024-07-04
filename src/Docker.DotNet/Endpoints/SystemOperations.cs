@@ -22,14 +22,14 @@ namespace Docker.DotNet
             {
                 throw new ArgumentNullException(nameof(authConfig));
             }
-            var data = new JsonRequestContent<AuthConfig>(authConfig, this._client.JsonSerializer);
+            var data = JsonRequestContent.Create(authConfig, this._client.JsonSerializer, DockerJsonSerializerContext.Default.AuthConfig);
 
             return this._client.MakeRequestAsync(this._client.NoErrorHandlers, HttpMethod.Post, "auth", null, data, cancellationToken);
         }
 
         public async Task<VersionResponse> GetVersionAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
-            return await this._client.MakeRequestAsync<VersionResponse>(this._client.NoErrorHandlers, HttpMethod.Get, "version", cancellationToken).ConfigureAwait(false);
+            return await this._client.MakeRequestAsync(this._client.NoErrorHandlers, HttpMethod.Get, "version", DockerJsonSerializerContext.Default.VersionResponse, cancellationToken).ConfigureAwait(false);
         }
 
         public Task PingAsync(CancellationToken cancellationToken = default(CancellationToken))
@@ -39,7 +39,7 @@ namespace Docker.DotNet
 
         public async Task<SystemInfoResponse> GetSystemInfoAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
-            return await this._client.MakeRequestAsync<SystemInfoResponse>(this._client.NoErrorHandlers, HttpMethod.Get, "info", cancellationToken).ConfigureAwait(false);
+            return await this._client.MakeRequestAsync(this._client.NoErrorHandlers, HttpMethod.Get, "info", DockerJsonSerializerContext.Default.SystemInfoResponse, cancellationToken).ConfigureAwait(false);
         }
 
         public Task<Stream> MonitorEventsAsync(ContainerEventsParameters parameters, CancellationToken cancellationToken)
@@ -63,6 +63,7 @@ namespace Docker.DotNet
             return StreamUtil.MonitorStreamForMessagesAsync(
                 MonitorEventsAsync(parameters, cancellationToken),
                 this._client,
+                DockerJsonSerializerContext.Default.Message,
                 cancellationToken,
                 progress);
         }

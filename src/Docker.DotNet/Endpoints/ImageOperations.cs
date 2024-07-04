@@ -40,7 +40,7 @@ namespace Docker.DotNet
             }
 
             IQueryString queryParameters = new QueryString<ImagesListParameters>(parameters);
-            return await this._client.MakeRequestAsync<ImagesListResponse[]>(this._client.NoErrorHandlers, HttpMethod.Get, "images/json", queryParameters, cancellationToken).ConfigureAwait(false);
+            return await this._client.MakeRequestAsync(this._client.NoErrorHandlers, HttpMethod.Get, "images/json", queryParameters, DockerJsonSerializerContext.Default.ImagesListResponseArray, cancellationToken).ConfigureAwait(false);
         }
 
         public Task<Stream> BuildImageFromDockerfileAsync(Stream contents, ImageBuildParameters parameters, CancellationToken cancellationToken = default(CancellationToken))
@@ -97,6 +97,7 @@ namespace Docker.DotNet
                     customHeaders,
                     cancellationToken),
                 this._client,
+                DockerJsonSerializerContext.Default.JSONMessage,
                 cancellationToken,
                 progress
             );
@@ -148,6 +149,7 @@ namespace Docker.DotNet
                 this._client.MakeRequestForRawResponseAsync(httpMethod,
                 "images/create", queryParameters, content, customHeaders, cancellationToken),
                 this._client,
+                DockerJsonSerializerContext.Default.JSONMessage,
                 cancellationToken,
                 progress);
         }
@@ -159,7 +161,7 @@ namespace Docker.DotNet
                 throw new ArgumentNullException(nameof(name));
             }
 
-            return await this._client.MakeRequestAsync<ImageInspectResponse>(new[] { NoSuchImageHandler }, HttpMethod.Get, $"images/{name}/json", cancellationToken).ConfigureAwait(false);
+            return await this._client.MakeRequestAsync(new[] { NoSuchImageHandler }, HttpMethod.Get, $"images/{name}/json", DockerJsonSerializerContext.Default.ImageInspectResponse, cancellationToken).ConfigureAwait(false);
         }
 
         public async Task<IList<ImageHistoryResponse>> GetImageHistoryAsync(string name, CancellationToken cancellationToken = default(CancellationToken))
@@ -169,7 +171,7 @@ namespace Docker.DotNet
                 throw new ArgumentNullException(nameof(name));
             }
 
-            return await this._client.MakeRequestAsync<ImageHistoryResponse[]>(new[] { NoSuchImageHandler }, HttpMethod.Get, $"images/{name}/history", cancellationToken).ConfigureAwait(false);
+            return await this._client.MakeRequestAsync(new[] { NoSuchImageHandler }, HttpMethod.Get, $"images/{name}/history", DockerJsonSerializerContext.Default.ImageHistoryResponseArray, cancellationToken).ConfigureAwait(false);
         }
 
         public Task PushImageAsync(string name, ImagePushParameters parameters, AuthConfig authConfig, IProgress<JSONMessage> progress, CancellationToken cancellationToken = default(CancellationToken))
@@ -188,6 +190,7 @@ namespace Docker.DotNet
             return StreamUtil.MonitorStreamForMessagesAsync(
                 this._client.MakeRequestForStreamAsync(this._client.NoErrorHandlers, HttpMethod.Post, $"images/{name}/push", queryParameters, null, RegistryAuthHeaders(authConfig), CancellationToken.None),
                 this._client,
+                DockerJsonSerializerContext.Default.JSONMessage,
                 cancellationToken,
                 progress);
         }
@@ -221,7 +224,7 @@ namespace Docker.DotNet
             }
 
             IQueryString queryParameters = new QueryString<ImageDeleteParameters>(parameters);
-            return await this._client.MakeRequestAsync<Dictionary<string, string>[]>(new[] { NoSuchImageHandler }, HttpMethod.Delete, $"images/{name}", queryParameters, cancellationToken).ConfigureAwait(false);
+            return await this._client.MakeRequestAsync(new[] { NoSuchImageHandler }, HttpMethod.Delete, $"images/{name}", queryParameters, DockerJsonSerializerContext.Default.DictionaryStringStringArray, cancellationToken).ConfigureAwait(false);
         }
 
         public async Task<IList<ImageSearchResponse>> SearchImagesAsync(ImagesSearchParameters parameters, CancellationToken cancellationToken = default(CancellationToken))
@@ -232,13 +235,13 @@ namespace Docker.DotNet
             }
 
             IQueryString queryParameters = new QueryString<ImagesSearchParameters>(parameters);
-            return await this._client.MakeRequestAsync<ImageSearchResponse[]>(this._client.NoErrorHandlers, HttpMethod.Get, "images/search", queryParameters, cancellationToken).ConfigureAwait(false);
+            return await this._client.MakeRequestAsync(this._client.NoErrorHandlers, HttpMethod.Get, "images/search", queryParameters, DockerJsonSerializerContext.Default.ImageSearchResponseArray, cancellationToken).ConfigureAwait(false);
         }
 
         public async Task<ImagesPruneResponse> PruneImagesAsync(ImagesPruneParameters parameters, CancellationToken cancellationToken)
         {
             var queryParameters = parameters == null ? null : new QueryString<ImagesPruneParameters>(parameters);
-            return await this._client.MakeRequestAsync<ImagesPruneResponse>(this._client.NoErrorHandlers, HttpMethod.Post, "images/prune", queryParameters, cancellationToken).ConfigureAwait(false);
+            return await this._client.MakeRequestAsync(this._client.NoErrorHandlers, HttpMethod.Post, "images/prune", queryParameters, DockerJsonSerializerContext.Default.ImagesPruneResponse, cancellationToken).ConfigureAwait(false);
         }
 
         public async Task<CommitContainerChangesResponse> CommitContainerChangesAsync(CommitContainerChangesParameters parameters, CancellationToken cancellationToken = default(CancellationToken))
@@ -248,10 +251,10 @@ namespace Docker.DotNet
                 throw new ArgumentNullException(nameof(parameters));
             }
 
-            var data = new JsonRequestContent<CommitContainerChangesParameters>(parameters, this._client.JsonSerializer);
+            var data = JsonRequestContent.Create(parameters, this._client.JsonSerializer, DockerJsonSerializerContext.Default.CommitContainerChangesParameters);
 
             IQueryString queryParameters = new QueryString<CommitContainerChangesParameters>(parameters);
-            return await this._client.MakeRequestAsync<CommitContainerChangesResponse>(this._client.NoErrorHandlers, HttpMethod.Post, "commit", queryParameters, data, cancellationToken).ConfigureAwait(false);
+            return await this._client.MakeRequestAsync(this._client.NoErrorHandlers, HttpMethod.Post, "commit", queryParameters, data, DockerJsonSerializerContext.Default.CommitContainerChangesResponse, cancellationToken).ConfigureAwait(false);
         }
 
         public Task<Stream> SaveImageAsync(string name, CancellationToken cancellationToken = default(CancellationToken))
@@ -289,6 +292,7 @@ namespace Docker.DotNet
             return StreamUtil.MonitorStreamForMessagesAsync(
                 this._client.MakeRequestForStreamAsync(this._client.NoErrorHandlers, HttpMethod.Post, "images/load", queryParameters, content, cancellationToken),
                 this._client,
+                DockerJsonSerializerContext.Default.JSONMessage,
                 cancellationToken,
                 progress);
         }
@@ -299,7 +303,7 @@ namespace Docker.DotNet
             {
                 {
                     RegistryAuthHeaderKey,
-                    Convert.ToBase64String(this._client.JsonSerializer.SerializeObject(authConfig ?? new AuthConfig()))
+                    Convert.ToBase64String(this._client.JsonSerializer.SerializeObject(authConfig ?? new AuthConfig(), DockerJsonSerializerContext.Default.AuthConfig))
                     .Replace("/", "_").Replace("+", "-") 
                     // This is not documented in Docker API but from source code (https://github.com/docker/docker-ce/blob/10e40bd1548f69354a803a15fde1b672cc024b91/components/cli/cli/command/registry.go#L47)
                     // and from multiple internet sources it has to be base64-url-safe. 
@@ -315,7 +319,7 @@ namespace Docker.DotNet
             {
                 {
                     RegistryConfigHeaderKey,
-                    Convert.ToBase64String(this._client.JsonSerializer.SerializeObject(configDictionary))
+                    Convert.ToBase64String(this._client.JsonSerializer.SerializeObject(configDictionary, DockerJsonSerializerContext.Default.DictionaryStringAuthConfig))
                 }
             };
         }

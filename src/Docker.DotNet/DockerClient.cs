@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Net.Http.Client;
@@ -178,9 +179,10 @@ namespace Docker.DotNet
             IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers,
             HttpMethod method,
             string path,
+            JsonTypeInfo<T> typeInfo,
             CancellationToken token)
         {
-            return MakeRequestAsync<T>(errorHandlers, method, path, null, null, token);
+            return MakeRequestAsync(errorHandlers, method, path, null, null, typeInfo, token);
         }
 
         internal Task MakeRequestAsync(
@@ -198,9 +200,10 @@ namespace Docker.DotNet
             HttpMethod method,
             string path,
             IQueryString queryString,
+            JsonTypeInfo<T> typeInfo,
             CancellationToken token)
         {
-            return MakeRequestAsync<T>(errorHandlers, method, path, queryString, null, token);
+            return MakeRequestAsync(errorHandlers, method, path, queryString, null, typeInfo, token);
         }
 
         internal Task MakeRequestAsync(
@@ -220,9 +223,10 @@ namespace Docker.DotNet
             string path,
             IQueryString queryString,
             IRequestContent body,
+            JsonTypeInfo<T> typeInfo,
             CancellationToken token)
         {
-            return MakeRequestAsync<T>(errorHandlers, method, path, queryString, body, null, token);
+            return MakeRequestAsync(errorHandlers, method, path, queryString, body, null, typeInfo, token);
         }
 
         internal Task<T> MakeRequestAsync<T>(
@@ -232,9 +236,10 @@ namespace Docker.DotNet
             IQueryString queryString,
             IRequestContent body,
             IDictionary<string, string> headers,
+            JsonTypeInfo<T> typeInfo,
             CancellationToken token)
         {
-            return MakeRequestAsync<T>(errorHandlers, method, path, queryString, body, headers, DefaultTimeout, token);
+            return MakeRequestAsync(errorHandlers, method, path, queryString, body, headers, DefaultTimeout, typeInfo, token);
         }
 
         internal Task MakeRequestAsync(
@@ -247,7 +252,7 @@ namespace Docker.DotNet
             TimeSpan timeout,
             CancellationToken token)
         {
-            return MakeRequestAsync<NoContent>(errorHandlers, method, path, queryString, body, headers, timeout, token);
+            return MakeRequestAsync<NoContent>(errorHandlers, method, path, queryString, body, headers, timeout, null, token);
         }
 
         internal async Task<T> MakeRequestAsync<T>(
@@ -258,6 +263,7 @@ namespace Docker.DotNet
             IRequestContent body,
             IDictionary<string, string> headers,
             TimeSpan timeout,
+            JsonTypeInfo<T> typeInfo,
             CancellationToken token)
         {
             var response = await PrivateMakeRequestAsync(timeout, HttpCompletionOption.ResponseContentRead, method, path, queryString, headers, body, token)
@@ -273,7 +279,7 @@ namespace Docker.DotNet
                     return default;
                 }
 
-                return await JsonSerializer.DeserializeAsync<T>(response.Content, token)
+                return await JsonSerializer.DeserializeAsync(response.Content, typeInfo, token)
                     .ConfigureAwait(false);
             }
         }

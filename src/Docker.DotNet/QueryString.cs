@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 
 namespace Docker.DotNet
 {
-    internal class QueryString<T> : IQueryString
+    internal class QueryString<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] T> : IQueryString
     {
         private T Object { get; }
 
@@ -91,7 +92,7 @@ namespace Docker.DotNet
             return converter.Convert(value);
         }
 
-        private Tuple<PropertyInfo, TAttribType>[] FindAttributedPublicProperties<TValue, TAttribType>() where TAttribType : Attribute
+        private Tuple<PropertyInfo, TAttribType>[] FindAttributedPublicProperties<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TValue, TAttribType>() where TAttribType : Attribute
         {
             var t = typeof(TValue);
             var ofAttributeType = typeof(TAttribType);

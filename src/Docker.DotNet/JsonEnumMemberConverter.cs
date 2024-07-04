@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
@@ -9,7 +10,7 @@ using System.Text.Json.Serialization;
 namespace Docker.DotNet;
 
 // Adapted from https://github.com/dotnet/runtime/issues/74385#issuecomment-1705083109
-internal sealed class JsonEnumMemberConverter<TEnum> : JsonStringEnumConverter<TEnum> where TEnum : struct, Enum
+internal sealed class JsonEnumMemberConverter<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields)] TEnum> : JsonStringEnumConverter<TEnum> where TEnum : struct, Enum
 {
     public JsonEnumMemberConverter() : base(namingPolicy: ResolveNamingPolicy())
     {
