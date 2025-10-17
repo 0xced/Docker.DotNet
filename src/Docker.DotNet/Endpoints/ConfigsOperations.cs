@@ -11,7 +11,7 @@ internal class ConfigOperations : IConfigOperations
 
     async Task<IList<SwarmConfig>> IConfigOperations.ListConfigsAsync(CancellationToken cancellationToken)
     {
-        return await _client.MakeRequestAsync<IList<SwarmConfig>>(_client.NoErrorHandlers, HttpMethod.Get, "configs", cancellationToken).ConfigureAwait(false);
+        return await _client.MakeRequestAsync(Default.SwarmConfigArray, _client.NoErrorHandlers, HttpMethod.Get, "configs", cancellationToken).ConfigureAwait(false);
     }
 
     async Task<SwarmCreateConfigResponse> IConfigOperations.CreateConfigAsync(SwarmCreateConfigParameters body, CancellationToken cancellationToken)
@@ -21,8 +21,8 @@ internal class ConfigOperations : IConfigOperations
             throw new ArgumentNullException(nameof(body));
         }
 
-        var data = new JsonRequestContent<SwarmConfigSpec>(body.Config, DockerClient.JsonSerializer);
-        return await _client.MakeRequestAsync<SwarmCreateConfigResponse>(_client.NoErrorHandlers, HttpMethod.Post, "configs/create", null, data, cancellationToken).ConfigureAwait(false);
+        var data = JsonRequestContent.Create(Default.SwarmConfigSpec, body.Config);
+        return await _client.MakeRequestAsync(Default.SwarmCreateConfigResponse, _client.NoErrorHandlers, HttpMethod.Post, "configs/create", null, data, cancellationToken).ConfigureAwait(false);
     }
 
     async Task<SwarmConfig> IConfigOperations.InspectConfigAsync(string id, CancellationToken cancellationToken)
@@ -32,7 +32,7 @@ internal class ConfigOperations : IConfigOperations
             throw new ArgumentNullException(nameof(id));
         }
 
-        return await _client.MakeRequestAsync<SwarmConfig>(_client.NoErrorHandlers, HttpMethod.Get, $"configs/{id}", cancellationToken).ConfigureAwait(false);
+        return await _client.MakeRequestAsync(Default.SwarmConfig, _client.NoErrorHandlers, HttpMethod.Get, $"configs/{id}", cancellationToken).ConfigureAwait(false);
     }
 
     Task IConfigOperations.RemoveConfigAsync(string id, CancellationToken cancellationToken)

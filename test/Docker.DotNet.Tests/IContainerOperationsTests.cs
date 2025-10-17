@@ -373,7 +373,7 @@ public class IContainerOperationsTests
                     {
                         Stream = true
                     },
-                    new Progress<ContainerStatsResponse>(m => { containerStatsList.Add(m); _testOutputHelper.WriteLine(JsonSerializer.Instance.Serialize(m)); }),
+                    new Progress<ContainerStatsResponse>(m => { containerStatsList.Add(m); _testOutputHelper.WriteLine(JsonSerializer.Instance.Serialize(DockerClientSerializerContext.Default.ContainerStatsResponse, m)); }),
                     linkedCts.Token
                 );
             }
@@ -466,7 +466,7 @@ public class IContainerOperationsTests
                     {
                         Stream = true
                     },
-                    new Progress<ContainerStatsResponse>(m => { containerStatsList.Add(m); _testOutputHelper.WriteLine(JsonSerializer.Instance.Serialize(m)); }),
+                    new Progress<ContainerStatsResponse>(m => { containerStatsList.Add(m); _testOutputHelper.WriteLine(JsonSerializer.Instance.Serialize(DockerClientSerializerContext.Default.ContainerStatsResponse, m)); }),
                     linkedTcs.Token
                 );
             }
@@ -516,7 +516,7 @@ public class IContainerOperationsTests
         Assert.Equal("exited", inspectKilledContainerResponse.State.Status);
 
         _testOutputHelper.WriteLine("Killed");
-        _testOutputHelper.WriteLine(JsonSerializer.Instance.Serialize(inspectKilledContainerResponse));
+        _testOutputHelper.WriteLine(JsonSerializer.Instance.Serialize(DockerClientSerializerContext.Default.ContainerInspectResponse, inspectKilledContainerResponse));
     }
 
     [Fact]
@@ -670,7 +670,7 @@ public class IContainerOperationsTests
             waitContainerCts.Token
         );
 
-        _testOutputHelper.WriteLine($"CreateContainerResponse: '{JsonSerializer.Instance.Serialize(createContainerResponse)}'");
+        _testOutputHelper.WriteLine($"CreateContainerResponse: '{JsonSerializer.Instance.Serialize(DockerClientSerializerContext.Default.CreateContainerResponse, createContainerResponse)}'");
 
         _ = await _testFixture.DockerClient.Containers.StartContainerAsync(createContainerResponse.ID, new ContainerStartParameters(), waitContainerCts.Token);
 

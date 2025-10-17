@@ -21,7 +21,7 @@ internal class TasksOperations : ITasksOperations
             query = new QueryString<TasksListParameters>(parameters);
         }
 
-        return await _client.MakeRequestAsync<IList<TaskResponse>>(_client.NoErrorHandlers, HttpMethod.Get, "tasks", query, cancellationToken).ConfigureAwait(false);
+        return await _client.MakeRequestAsync(Default.TaskResponseArray, _client.NoErrorHandlers, HttpMethod.Get, "tasks", query, cancellationToken).ConfigureAwait(false);
     }
 
     async Task<TaskResponse> ITasksOperations.InspectAsync(string id, CancellationToken cancellationToken)
@@ -31,6 +31,6 @@ internal class TasksOperations : ITasksOperations
             throw new ArgumentNullException(nameof(id));
         }
 
-        return await _client.MakeRequestAsync<TaskResponse>(_client.NoErrorHandlers, HttpMethod.Get, $"tasks/{id}", cancellationToken).ConfigureAwait(false);
+        return await _client.MakeRequestAsync(Default.TaskResponse, _client.NoErrorHandlers, HttpMethod.Get, $"tasks/{id}", cancellationToken).ConfigureAwait(false);
     }
 }

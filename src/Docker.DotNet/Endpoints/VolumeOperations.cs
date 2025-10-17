@@ -11,13 +11,13 @@ internal class VolumeOperations : IVolumeOperations
 
     async Task<VolumesListResponse> IVolumeOperations.ListAsync(CancellationToken cancellationToken)
     {
-        return await _client.MakeRequestAsync<VolumesListResponse>(_client.NoErrorHandlers, HttpMethod.Get, "volumes", cancellationToken).ConfigureAwait(false);
+        return await _client.MakeRequestAsync(Default.VolumesListResponse, _client.NoErrorHandlers, HttpMethod.Get, "volumes", cancellationToken).ConfigureAwait(false);
     }
 
     async Task<VolumesListResponse> IVolumeOperations.ListAsync(VolumesListParameters parameters, CancellationToken cancellationToken)
     {
         var queryParameters = parameters == null ? null : new QueryString<VolumesListParameters>(parameters);
-        return await _client.MakeRequestAsync<VolumesListResponse>(_client.NoErrorHandlers, HttpMethod.Get, "volumes", queryParameters, null, cancellationToken).ConfigureAwait(false);
+        return await _client.MakeRequestAsync(Default.VolumesListResponse, _client.NoErrorHandlers, HttpMethod.Get, "volumes", queryParameters, null, cancellationToken).ConfigureAwait(false);
     }
 
     async Task<VolumeResponse> IVolumeOperations.CreateAsync(VolumesCreateParameters parameters, CancellationToken cancellationToken)
@@ -27,8 +27,8 @@ internal class VolumeOperations : IVolumeOperations
             throw new ArgumentNullException(nameof(parameters));
         }
 
-        var data = new JsonRequestContent<VolumesCreateParameters>(parameters, DockerClient.JsonSerializer);
-        return await _client.MakeRequestAsync<VolumeResponse>(_client.NoErrorHandlers, HttpMethod.Post, "volumes/create", null, data, cancellationToken);
+        var data = JsonRequestContent.Create(Default.VolumesCreateParameters, parameters);
+        return await _client.MakeRequestAsync(Default.VolumeResponse, _client.NoErrorHandlers, HttpMethod.Post, "volumes/create", null, data, cancellationToken);
     }
 
     async Task<VolumeResponse> IVolumeOperations.InspectAsync(string name, CancellationToken cancellationToken)
@@ -38,7 +38,7 @@ internal class VolumeOperations : IVolumeOperations
             throw new ArgumentNullException(nameof(name));
         }
 
-        return await _client.MakeRequestAsync<VolumeResponse>(_client.NoErrorHandlers, HttpMethod.Get, $"volumes/{name}", cancellationToken).ConfigureAwait(false);
+        return await _client.MakeRequestAsync(Default.VolumeResponse, _client.NoErrorHandlers, HttpMethod.Get, $"volumes/{name}", cancellationToken).ConfigureAwait(false);
     }
 
     Task IVolumeOperations.RemoveAsync(string name, bool? force, CancellationToken cancellationToken)
@@ -54,6 +54,6 @@ internal class VolumeOperations : IVolumeOperations
     async Task<VolumesPruneResponse> IVolumeOperations.PruneAsync(VolumesPruneParameters parameters, CancellationToken cancellationToken)
     {
         var queryParameters = parameters == null ? null : new QueryString<VolumesPruneParameters>(parameters);
-        return await _client.MakeRequestAsync<VolumesPruneResponse>(_client.NoErrorHandlers, HttpMethod.Post, "volumes/prune", queryParameters, cancellationToken);
+        return await _client.MakeRequestAsync(Default.VolumesPruneResponse, _client.NoErrorHandlers, HttpMethod.Post, "volumes/prune", queryParameters, cancellationToken);
     }
 }

@@ -1,28 +1,22 @@
 namespace Docker.DotNet;
 
-internal class JsonRequestContent<T> : IRequestContent where T : class
+internal class JsonRequestContent
 {
-    private readonly T _value;
-    private readonly JsonSerializer _serializer;
-
-    public JsonRequestContent(T val, JsonSerializer serializer)
+    private JsonRequestContent()
     {
-        if (val == null)
-        {
-            throw new ArgumentNullException(nameof(val));
-        }
-
-        if (serializer == null)
-        {
-            throw new ArgumentNullException(nameof(serializer));
-        }
-
-        _value = val;
-        _serializer = serializer;
     }
 
-    public HttpContent GetContent()
+    public static IRequestContent Create<T>(JsonTypeInfo<T> jsonTypeInfo, T val) where T : class
     {
-        return _serializer.GetHttpContent(_value);
+        return new JsonRequestContentImpl<T>(val, jsonTypeInfo);
+    }
+
+    private class JsonRequestContentImpl<T>(T val, JsonTypeInfo<T> jsonTypeInfo) : IRequestContent
+        where T : class
+    {
+        private readonly T _value = val ?? throw new ArgumentNullException(nameof(val));
+        private readonly JsonTypeInfo<T> _jsonTypeInfo = jsonTypeInfo ?? throw new ArgumentNullException(nameof(jsonTypeInfo));
+
+        public HttpContent GetContent() => JsonSerializer.Instance.GetHttpContent(_jsonTypeInfo, _value);
     }
 }

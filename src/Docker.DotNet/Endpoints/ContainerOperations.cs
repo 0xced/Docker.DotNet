@@ -33,7 +33,7 @@ internal class ContainerOperations : IContainerOperations
         }
 
         IQueryString queryParameters = new QueryString<ContainersListParameters>(parameters);
-        return await _client.MakeRequestAsync<ContainerListResponse[]>(_client.NoErrorHandlers, HttpMethod.Get, "containers/json", queryParameters, cancellationToken).ConfigureAwait(false);
+        return await _client.MakeRequestAsync(Default.ContainerListResponseArray, _client.NoErrorHandlers, HttpMethod.Get, "containers/json", queryParameters, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<CreateContainerResponse> CreateContainerAsync(CreateContainerParameters parameters, CancellationToken cancellationToken = default)
@@ -50,8 +50,8 @@ internal class ContainerOperations : IContainerOperations
             qs = new QueryString<CreateContainerParameters>(parameters);
         }
 
-        var data = new JsonRequestContent<CreateContainerParameters>(parameters, DockerClient.JsonSerializer);
-        return await _client.MakeRequestAsync<CreateContainerResponse>(new[] { NoSuchImageHandler }, HttpMethod.Post, "containers/create", qs, data, cancellationToken).ConfigureAwait(false);
+        var data = JsonRequestContent.Create(Default.CreateContainerParameters, parameters);
+        return await _client.MakeRequestAsync(Default.CreateContainerResponse, new[] { NoSuchImageHandler }, HttpMethod.Post, "containers/create", qs, data, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<ContainerInspectResponse> InspectContainerAsync(string id, CancellationToken cancellationToken = default)
@@ -61,7 +61,7 @@ internal class ContainerOperations : IContainerOperations
             throw new ArgumentNullException(nameof(id));
         }
 
-        return await _client.MakeRequestAsync<ContainerInspectResponse>(new[] { NoSuchContainerHandler }, HttpMethod.Get, $"containers/{id}/json", cancellationToken).ConfigureAwait(false);
+        return await _client.MakeRequestAsync(Default.ContainerInspectResponse, new[] { NoSuchContainerHandler }, HttpMethod.Get, $"containers/{id}/json", cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<ContainerInspectResponse> InspectContainerAsync(string id, ContainerInspectParameters parameters, CancellationToken cancellationToken = default)
@@ -77,7 +77,7 @@ internal class ContainerOperations : IContainerOperations
         }
 
         IQueryString queryString = new QueryString<ContainerInspectParameters>(parameters);
-        return await _client.MakeRequestAsync<ContainerInspectResponse>(new[] { NoSuchContainerHandler }, HttpMethod.Get, $"containers/{id}/json", queryString, cancellationToken).ConfigureAwait(false);
+        return await _client.MakeRequestAsync(Default.ContainerInspectResponse, new[] { NoSuchContainerHandler }, HttpMethod.Get, $"containers/{id}/json", queryString, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<ContainerProcessesResponse> ListProcessesAsync(string id, ContainerListProcessesParameters parameters, CancellationToken cancellationToken = default)
@@ -93,7 +93,7 @@ internal class ContainerOperations : IContainerOperations
         }
 
         IQueryString queryParameters = new QueryString<ContainerListProcessesParameters>(parameters);
-        return await _client.MakeRequestAsync<ContainerProcessesResponse>(new[] { NoSuchContainerHandler }, HttpMethod.Get, $"containers/{id}/top", queryParameters, cancellationToken).ConfigureAwait(false);
+        return await _client.MakeRequestAsync(Default.ContainerProcessesResponse, new[] { NoSuchContainerHandler }, HttpMethod.Get, $"containers/{id}/top", queryParameters, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task GetContainerLogsAsync(string id, ContainerLogsParameters parameters, IProgress<string> progress, CancellationToken cancellationToken = default)
@@ -135,7 +135,7 @@ internal class ContainerOperations : IContainerOperations
             throw new ArgumentNullException(nameof(id));
         }
 
-        return await _client.MakeRequestAsync<ContainerFileSystemChangeResponse[]>(new[] { NoSuchContainerHandler }, HttpMethod.Get, $"containers/{id}/changes", cancellationToken).ConfigureAwait(false);
+        return await _client.MakeRequestAsync(Default.ContainerFileSystemChangeResponseArray, new[] { NoSuchContainerHandler }, HttpMethod.Get, $"containers/{id}/changes", cancellationToken).ConfigureAwait(false);
     }
 
     public Task<Stream> ExportContainerAsync(string id, CancellationToken cancellationToken)
@@ -167,6 +167,7 @@ internal class ContainerOperations : IContainerOperations
     public Task GetContainerStatsAsync(string id, ContainerStatsParameters parameters, IProgress<ContainerStatsResponse> progress, CancellationToken cancellationToken = default)
     {
         return StreamUtil.MonitorStreamForMessagesAsync(
+            Default.ContainerStatsResponse,
             GetContainerStatsAsync(id, parameters, cancellationToken),
             _client,
             cancellationToken,
@@ -318,7 +319,7 @@ internal class ContainerOperations : IContainerOperations
             throw new ArgumentNullException(nameof(id));
         }
 
-        return await _client.MakeRequestAsync<ContainerWaitResponse>(new[] { NoSuchContainerHandler }, HttpMethod.Post, $"containers/{id}/wait", null, null, null, Timeout.InfiniteTimeSpan, cancellationToken).ConfigureAwait(false);
+        return await _client.MakeRequestAsync(Default.ContainerWaitResponse, new[] { NoSuchContainerHandler }, HttpMethod.Post, $"containers/{id}/wait", null, null, null, Timeout.InfiniteTimeSpan, cancellationToken).ConfigureAwait(false);
     }
 
     public Task RemoveContainerAsync(string id, ContainerRemoveParameters parameters, CancellationToken cancellationToken = default)
@@ -357,7 +358,7 @@ internal class ContainerOperations : IContainerOperations
 
         var bytes = Convert.FromBase64String(statHeader);
 
-        var pathStat = DockerClient.JsonSerializer.Deserialize<ContainerPathStatResponse>(bytes);
+        var pathStat = DockerClient.JsonSerializer.Deserialize(Default.ContainerPathStatResponse, bytes);
 
         return new ContainerArchiveResponse
         {
@@ -387,7 +388,7 @@ internal class ContainerOperations : IContainerOperations
     public async Task<ContainersPruneResponse> PruneContainersAsync(ContainersPruneParameters parameters, CancellationToken cancellationToken)
     {
         var queryParameters = parameters == null ? null : new QueryString<ContainersPruneParameters>(parameters);
-        return await _client.MakeRequestAsync<ContainersPruneResponse>(_client.NoErrorHandlers, HttpMethod.Post, "containers/prune", queryParameters, cancellationToken).ConfigureAwait(false);
+        return await _client.MakeRequestAsync(Default.ContainersPruneResponse, _client.NoErrorHandlers, HttpMethod.Post, "containers/prune", queryParameters, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<ContainerUpdateResponse> UpdateContainerAsync(string id, ContainerUpdateParameters parameters, CancellationToken cancellationToken = default)
@@ -402,7 +403,7 @@ internal class ContainerOperations : IContainerOperations
             throw new ArgumentNullException(nameof(parameters));
         }
 
-        var data = new JsonRequestContent<ContainerUpdateParameters>(parameters, DockerClient.JsonSerializer);
-        return await _client.MakeRequestAsync<ContainerUpdateResponse>(new[] { NoSuchContainerHandler }, HttpMethod.Post, $"containers/{id}/update", null, data, cancellationToken);
+        var data = JsonRequestContent.Create(Default.ContainerUpdateParameters, parameters);
+        return await _client.MakeRequestAsync(Default.ContainerUpdateResponse, new[] { NoSuchContainerHandler }, HttpMethod.Post, $"containers/{id}/update", null, data, cancellationToken);
     }
 }

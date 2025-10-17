@@ -116,7 +116,7 @@ public class ISystemOperationsTests
 
                 var monitorTask = _testFixture.DockerClient.System.MonitorEventsAsync(
                     new ContainerEventsParameters(),
-                    new Progress<Message>(value => _testOutputHelper.WriteLine($"DockerSystemEvent: {JsonSerializer.Instance.Serialize(value)}")),
+                    new Progress<Message>(value => _testOutputHelper.WriteLine($"DockerSystemEvent: {JsonSerializer.Instance.Serialize(DockerClientSerializerContext.Default.Message, value)}")),
                     cts.Token);
 
                 // (2) Wait for some time to make sure we get into blocking IO call

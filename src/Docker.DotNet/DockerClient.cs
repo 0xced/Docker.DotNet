@@ -151,16 +151,17 @@ public sealed class DockerClient : IDockerClient
         string path,
         CancellationToken token)
     {
-        return MakeRequestAsync<NoContent>(errorHandlers, method, path, null, null, token);
+        return MakeRequestAsync<NoContent>(null, errorHandlers, method, path, null, token);
     }
 
     internal Task<T> MakeRequestAsync<T>(
+        JsonTypeInfo<T> jsonTypeInfo,
         IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers,
         HttpMethod method,
         string path,
         CancellationToken token)
     {
-        return MakeRequestAsync<T>(errorHandlers, method, path, null, null, token);
+        return MakeRequestAsync(jsonTypeInfo, errorHandlers, method, path, null, null, token);
     }
 
     internal Task MakeRequestAsync(
@@ -170,17 +171,18 @@ public sealed class DockerClient : IDockerClient
         IQueryString queryString,
         CancellationToken token)
     {
-        return MakeRequestAsync<NoContent>(errorHandlers, method, path, queryString, null, token);
+        return MakeRequestAsync<NoContent>(null, errorHandlers, method, path, queryString, token);
     }
 
     internal Task<T> MakeRequestAsync<T>(
+        JsonTypeInfo<T> jsonTypeInfo,
         IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers,
         HttpMethod method,
         string path,
         IQueryString queryString,
         CancellationToken token)
     {
-        return MakeRequestAsync<T>(errorHandlers, method, path, queryString, null, token);
+        return MakeRequestAsync(jsonTypeInfo, errorHandlers, method, path, queryString, null, token);
     }
 
     internal Task MakeRequestAsync(
@@ -191,10 +193,11 @@ public sealed class DockerClient : IDockerClient
         IRequestContent body,
         CancellationToken token)
     {
-        return MakeRequestAsync<NoContent>(errorHandlers, method, path, queryString, body, null, token);
+        return MakeRequestAsync<NoContent>(null, errorHandlers, method, path, queryString, body, token);
     }
 
     internal Task<T> MakeRequestAsync<T>(
+        JsonTypeInfo<T> jsonTypeInfo,
         IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers,
         HttpMethod method,
         string path,
@@ -202,10 +205,11 @@ public sealed class DockerClient : IDockerClient
         IRequestContent body,
         CancellationToken token)
     {
-        return MakeRequestAsync<T>(errorHandlers, method, path, queryString, body, null, token);
+        return MakeRequestAsync(jsonTypeInfo, errorHandlers, method, path, queryString, body, null, token);
     }
 
     internal Task<T> MakeRequestAsync<T>(
+        JsonTypeInfo<T> jsonTypeInfo,
         IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers,
         HttpMethod method,
         string path,
@@ -214,7 +218,7 @@ public sealed class DockerClient : IDockerClient
         IDictionary<string, string> headers,
         CancellationToken token)
     {
-        return MakeRequestAsync<T>(errorHandlers, method, path, queryString, body, headers, DefaultTimeout, token);
+        return MakeRequestAsync(jsonTypeInfo, errorHandlers, method, path, queryString, body, headers, DefaultTimeout, token);
     }
 
     internal Task MakeRequestAsync(
@@ -227,10 +231,11 @@ public sealed class DockerClient : IDockerClient
         TimeSpan timeout,
         CancellationToken token)
     {
-        return MakeRequestAsync<NoContent>(errorHandlers, method, path, queryString, body, headers, timeout, token);
+        return MakeRequestAsync<NoContent>(null, errorHandlers, method, path, queryString, body, headers, timeout, token);
     }
 
     internal async Task<T> MakeRequestAsync<T>(
+        JsonTypeInfo<T> jsonTypeInfo,
         IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers,
         HttpMethod method,
         string path,
@@ -251,7 +256,7 @@ public sealed class DockerClient : IDockerClient
             return default;
         }
 
-        return await JsonSerializer.DeserializeAsync<T>(response.Content, token)
+        return await JsonSerializer.DeserializeAsync(jsonTypeInfo, response.Content, token)
             .ConfigureAwait(false);
     }
 

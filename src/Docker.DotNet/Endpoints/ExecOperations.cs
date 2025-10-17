@@ -24,7 +24,7 @@ internal class ExecOperations : IExecOperations
             throw new ArgumentNullException(nameof(id));
         }
 
-        return await _client.MakeRequestAsync<ContainerExecInspectResponse>([NoSuchContainerHandler], HttpMethod.Get, $"exec/{id}/json", null, cancellationToken)
+        return await _client.MakeRequestAsync(Default.ContainerExecInspectResponse, [NoSuchContainerHandler], HttpMethod.Get, $"exec/{id}/json", null, cancellationToken)
             .ConfigureAwait(false);
     }
 
@@ -40,9 +40,9 @@ internal class ExecOperations : IExecOperations
             throw new ArgumentNullException(nameof(parameters));
         }
 
-        var data = new JsonRequestContent<ContainerExecCreateParameters>(parameters, DockerClient.JsonSerializer);
+        var data = JsonRequestContent.Create(Default.ContainerExecCreateParameters, parameters);
 
-        return await _client.MakeRequestAsync<ContainerExecCreateResponse>([NoSuchContainerHandler], HttpMethod.Post, $"containers/{id}/exec", null, data, cancellationToken)
+        return await _client.MakeRequestAsync(Default.ContainerExecCreateResponse, [NoSuchContainerHandler], HttpMethod.Post, $"containers/{id}/exec", null, data, cancellationToken)
             .ConfigureAwait(false);
     }
 
@@ -53,7 +53,7 @@ internal class ExecOperations : IExecOperations
             throw new ArgumentNullException(nameof(id));
         }
 
-        var data = new JsonRequestContent<ContainerExecStartParameters>(parameters, DockerClient.JsonSerializer);
+        var data = JsonRequestContent.Create(Default.ContainerExecStartParameters, parameters);
 
         var stream = await _client.MakeRequestForHijackedStreamAsync([NoSuchContainerHandler], HttpMethod.Post, $"exec/{id}/start", null, data, null, cancellationToken)
             .ConfigureAwait(false);

@@ -19,8 +19,8 @@ public sealed class JsonEnumMemberConverterTests
         };
 
         // When
-        var jsonString = JsonSerializer.Instance.Serialize(parameters);
-        var deserializedParameters = JsonSerializer.Instance.Deserialize<CreateContainerParameters>(Encoding.UTF8.GetBytes(jsonString));
+        var jsonString = JsonSerializer.Instance.Serialize(DockerClientSerializerContext.Default.CreateContainerParameters, parameters);
+        var deserializedParameters = JsonSerializer.Instance.Deserialize(DockerClientSerializerContext.Default.CreateContainerParameters, Encoding.UTF8.GetBytes(jsonString));
 
         // Then
         Assert.Equal(restartPolicyKind, deserializedParameters.HostConfig.RestartPolicy.Name);

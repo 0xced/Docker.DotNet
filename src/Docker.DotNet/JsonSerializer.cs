@@ -2,50 +2,35 @@ namespace Docker.DotNet;
 
 internal sealed class JsonSerializer
 {
-    private readonly JsonSerializerOptions _options = new JsonSerializerOptions();
-
-    static JsonSerializer()
-    {
-    }
-
-    private JsonSerializer()
-    {
-        _options.Converters.Add(new JsonEnumMemberConverter<RestartPolicyKind>());
-        _options.Converters.Add(new JsonEnumMemberConverter<TaskState>());
-        _options.Converters.Add(new JsonDateTimeConverter());
-        _options.Converters.Add(new JsonNullableDateTimeConverter());
-        _options.Converters.Add(new JsonBase64Converter());
-    }
-
     public static JsonSerializer Instance { get; }
         = new JsonSerializer();
 
-    public HttpContent GetHttpContent<T>(T value)
+    public HttpContent GetHttpContent<T>(JsonTypeInfo<T> jsonTypeInfo, T value)
     {
-        return new StringContent(Serialize(value), Encoding.UTF8, "application/json");
+        return new StringContent(Serialize(jsonTypeInfo, value), Encoding.UTF8, "application/json");
     }
 
-    public string Serialize<T>(T value)
+    public string Serialize<T>(JsonTypeInfo<T> jsonTypeInfo, T value)
     {
-        return System.Text.Json.JsonSerializer.Serialize(value, _options);
+        return System.Text.Json.JsonSerializer.Serialize(value, jsonTypeInfo);
     }
 
-    public byte[] SerializeToUtf8Bytes<T>(T value)
+    public byte[] SerializeToUtf8Bytes<T>(JsonTypeInfo<T> jsonTypeInfo, T value)
     {
-        return System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(value, _options);
+        return System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(value, jsonTypeInfo);
     }
 
-    public T Deserialize<T>(byte[] json)
+    public T Deserialize<T>(JsonTypeInfo<T> jsonTypeInfo, byte[] json)
     {
-        return System.Text.Json.JsonSerializer.Deserialize<T>(json, _options);
+        return System.Text.Json.JsonSerializer.Deserialize(json, jsonTypeInfo);
     }
 
-    public Task<T> DeserializeAsync<T>(HttpContent content, CancellationToken cancellationToken)
+    public Task<T> DeserializeAsync<T>(JsonTypeInfo<T> jsonTypeInfo, HttpContent content, CancellationToken cancellationToken)
     {
-        return content.ReadFromJsonAsync<T>(_options, cancellationToken);
+        return content.ReadFromJsonAsync(jsonTypeInfo, cancellationToken);
     }
 
-    public async IAsyncEnumerable<T> DeserializeAsync<T>(Stream stream, [EnumeratorCancellation] CancellationToken cancellationToken)
+    public async IAsyncEnumerable<T> DeserializeAsync<T>(JsonTypeInfo<T> jsonTypeInfo, Stream stream, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         var reader = PipeReader.Create(stream);
 
@@ -58,7 +43,7 @@ internal sealed class JsonSerializer
 
             while (!buffer.IsEmpty && TryParseJson(ref buffer, out var jsonDocument))
             {
-                yield return jsonDocument.Deserialize<T>(_options);
+                yield return jsonDocument.Deserialize(jsonTypeInfo);
             }
 
             if (result.IsCompleted)

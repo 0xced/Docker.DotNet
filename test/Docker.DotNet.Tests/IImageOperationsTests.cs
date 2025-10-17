@@ -36,7 +36,7 @@ public class IImageOperationsTests
                 FromImage = $"{newRepositoryName}:{newTag}"
             },
             null,
-            new Progress<JSONMessage>(message => _testOutputHelper.WriteLine(JsonSerializer.Instance.Serialize(message))),
+            new Progress<JSONMessage>(message => _testOutputHelper.WriteLine(JsonSerializer.Instance.Serialize(DockerClientSerializerContext.Default.JSONMessage, message))),
             cts.Token);
 
         TimeSpan delay = TimeSpan.FromMilliseconds(5);

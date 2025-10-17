@@ -15,14 +15,14 @@ internal class SystemOperations : ISystemOperations
         {
             throw new ArgumentNullException(nameof(authConfig));
         }
-        var data = new JsonRequestContent<AuthConfig>(authConfig, DockerClient.JsonSerializer);
+        var data = JsonRequestContent.Create(Default.AuthConfig, authConfig);
 
         return _client.MakeRequestAsync(_client.NoErrorHandlers, HttpMethod.Post, "auth", null, data, cancellationToken);
     }
 
     public async Task<VersionResponse> GetVersionAsync(CancellationToken cancellationToken = default(CancellationToken))
     {
-        return await _client.MakeRequestAsync<VersionResponse>(_client.NoErrorHandlers, HttpMethod.Get, "version", cancellationToken).ConfigureAwait(false);
+        return await _client.MakeRequestAsync(Default.VersionResponse, _client.NoErrorHandlers, HttpMethod.Get, "version", cancellationToken).ConfigureAwait(false);
     }
 
     public Task PingAsync(CancellationToken cancellationToken = default(CancellationToken))
@@ -32,7 +32,7 @@ internal class SystemOperations : ISystemOperations
 
     public async Task<SystemInfoResponse> GetSystemInfoAsync(CancellationToken cancellationToken = default(CancellationToken))
     {
-        return await _client.MakeRequestAsync<SystemInfoResponse>(_client.NoErrorHandlers, HttpMethod.Get, "info", cancellationToken).ConfigureAwait(false);
+        return await _client.MakeRequestAsync(Default.SystemInfoResponse, _client.NoErrorHandlers, HttpMethod.Get, "info", cancellationToken).ConfigureAwait(false);
     }
 
     public Task<Stream> MonitorEventsAsync(ContainerEventsParameters parameters, CancellationToken cancellationToken)
@@ -54,6 +54,7 @@ internal class SystemOperations : ISystemOperations
         }
 
         return StreamUtil.MonitorStreamForMessagesAsync(
+            Default.Message,
             MonitorEventsAsync(parameters, cancellationToken),
             _client,
             cancellationToken,

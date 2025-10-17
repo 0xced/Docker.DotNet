@@ -64,22 +64,22 @@ internal static class StreamUtil
         }
     }
 
-    internal static async Task MonitorStreamForMessagesAsync<T>(Task<Stream> streamTask, DockerClient client, CancellationToken cancellationToken, IProgress<T> progress)
+    internal static async Task MonitorStreamForMessagesAsync<T>(JsonTypeInfo<T> jsonTypeInfo, Task<Stream> streamTask, DockerClient client, CancellationToken cancellationToken, IProgress<T> progress)
     {
         using (var stream = await streamTask)
         {
-            await foreach (var ev in DockerClient.JsonSerializer.DeserializeAsync<T>(stream, cancellationToken))
+            await foreach (var ev in DockerClient.JsonSerializer.DeserializeAsync(jsonTypeInfo, stream, cancellationToken))
             {
                 progress.Report(ev);
             }
         }
     }
 
-    internal static async Task MonitorResponseForMessagesAsync<T>(Task<HttpResponseMessage> responseTask, DockerClient client, CancellationToken cancel, IProgress<T> progress)
+    internal static async Task MonitorResponseForMessagesAsync<T>(JsonTypeInfo<T> jsonTypeInfo, Task<HttpResponseMessage> responseTask, DockerClient client, CancellationToken cancel, IProgress<T> progress)
     {
         using (var response = await responseTask)
         {
-            await MonitorStreamForMessagesAsync(response.Content.ReadAsStreamAsync(), client, cancel, progress);
+            await MonitorStreamForMessagesAsync(jsonTypeInfo, response.Content.ReadAsStreamAsync(), client, cancel, progress);
         }
     }
 }

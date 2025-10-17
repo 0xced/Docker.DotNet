@@ -22,19 +22,20 @@ internal class SwarmOperations : ISwarmOperations
     {
         if (parameters == null) throw new ArgumentNullException(nameof(parameters));
 
-        var data = new JsonRequestContent<ServiceSpec>(parameters.Service, DockerClient.JsonSerializer);
-        return await _client.MakeRequestAsync<ServiceCreateResponse>(new[] { SwarmResponseHandler }, HttpMethod.Post, "services/create", null, data, RegistryAuthHeaders(parameters.RegistryAuth), cancellationToken).ConfigureAwait(false);
+        var data = JsonRequestContent.Create(Default.ServiceSpec, parameters.Service);
+        return await _client.MakeRequestAsync(Default.ServiceCreateResponse, new[] { SwarmResponseHandler }, HttpMethod.Post, "services/create", null, data, RegistryAuthHeaders(parameters.RegistryAuth), cancellationToken).ConfigureAwait(false);
     }
 
     async Task<SwarmUnlockResponse> ISwarmOperations.GetSwarmUnlockKeyAsync(CancellationToken cancellationToken)
     {
-        return await _client.MakeRequestAsync<SwarmUnlockResponse>(new[] { SwarmResponseHandler }, HttpMethod.Get, "swarm/unlockkey", cancellationToken).ConfigureAwait(false);
+        return await _client.MakeRequestAsync(Default.SwarmUnlockResponse, new[] { SwarmResponseHandler }, HttpMethod.Get, "swarm/unlockkey", cancellationToken).ConfigureAwait(false);
     }
 
     async Task<string> ISwarmOperations.InitSwarmAsync(SwarmInitParameters parameters, CancellationToken cancellationToken)
     {
-        var data = new JsonRequestContent<SwarmInitParameters>(parameters, DockerClient.JsonSerializer);
-        return await _client.MakeRequestAsync<string>(
+        var data = JsonRequestContent.Create(Default.SwarmInitParameters, parameters);
+        return await _client.MakeRequestAsync(
+            Default.String,
             new ApiResponseErrorHandlingDelegate[]
             {
                 (statusCode, responseBody) =>
@@ -57,17 +58,17 @@ internal class SwarmOperations : ISwarmOperations
     {
         if (string.IsNullOrEmpty(id)) throw new ArgumentNullException(nameof(id));
 
-        return await _client.MakeRequestAsync<SwarmService>(new[] { SwarmResponseHandler }, HttpMethod.Get, $"services/{id}", cancellationToken).ConfigureAwait(false);
+        return await _client.MakeRequestAsync(Default.SwarmService, new[] { SwarmResponseHandler }, HttpMethod.Get, $"services/{id}", cancellationToken).ConfigureAwait(false);
     }
 
     async Task<SwarmInspectResponse> ISwarmOperations.InspectSwarmAsync(CancellationToken cancellationToken)
     {
-        return await _client.MakeRequestAsync<SwarmInspectResponse>(new[] { SwarmResponseHandler }, HttpMethod.Get, "swarm", cancellationToken).ConfigureAwait(false);
+        return await _client.MakeRequestAsync(Default.SwarmInspectResponse, new[] { SwarmResponseHandler }, HttpMethod.Get, "swarm", cancellationToken).ConfigureAwait(false);
     }
 
     async Task ISwarmOperations.JoinSwarmAsync(SwarmJoinParameters parameters, CancellationToken cancellationToken)
     {
-        var data = new JsonRequestContent<SwarmJoinParameters>(parameters, DockerClient.JsonSerializer);
+        var data = JsonRequestContent.Create(Default.SwarmJoinParameters, parameters);
         await _client.MakeRequestAsync(
             new ApiResponseErrorHandlingDelegate[]
             {
@@ -112,7 +113,7 @@ internal class SwarmOperations : ISwarmOperations
     {
         var queryParameters = parameters != null ? new QueryString<ServiceListParameters>(parameters) : null;
         return await _client
-            .MakeRequestAsync<SwarmService[]>(new[] { SwarmResponseHandler }, HttpMethod.Get, "services", queryParameters, cancellationToken)
+            .MakeRequestAsync(Default.SwarmServiceArray, new[] { SwarmResponseHandler }, HttpMethod.Get, "services", queryParameters, cancellationToken)
             .ConfigureAwait(false);
     }
 
@@ -125,7 +126,7 @@ internal class SwarmOperations : ISwarmOperations
 
     async Task ISwarmOperations.UnlockSwarmAsync(SwarmUnlockParameters parameters, CancellationToken cancellationToken)
     {
-        var body = new JsonRequestContent<SwarmUnlockParameters>(parameters, DockerClient.JsonSerializer);
+        var body = JsonRequestContent.Create(Default.SwarmUnlockParameters, parameters);
         await _client.MakeRequestAsync(new[] { SwarmResponseHandler }, HttpMethod.Post, "swarm/unlock", null, body, cancellationToken).ConfigureAwait(false);
     }
 
@@ -135,8 +136,8 @@ internal class SwarmOperations : ISwarmOperations
         if (parameters == null) throw new ArgumentNullException(nameof(parameters));
 
         var query = new QueryString<ServiceUpdateParameters>(parameters);
-        var body = new JsonRequestContent<ServiceSpec>(parameters.Service, DockerClient.JsonSerializer);
-        return await _client.MakeRequestAsync<ServiceUpdateResponse>(new[] { SwarmResponseHandler }, HttpMethod.Post, $"services/{id}/update", query, body, RegistryAuthHeaders(parameters.RegistryAuth), cancellationToken).ConfigureAwait(false);
+        var body = JsonRequestContent.Create(Default.ServiceSpec, parameters.Service);
+        return await _client.MakeRequestAsync(Default.ServiceUpdateResponse, new[] { SwarmResponseHandler }, HttpMethod.Post, $"services/{id}/update", query, body, RegistryAuthHeaders(parameters.RegistryAuth), cancellationToken).ConfigureAwait(false);
     }
 
     public Task<Stream> GetServiceLogsAsync(string id, ServiceLogsParameters parameters, CancellationToken cancellationToken = default(CancellationToken))
@@ -177,7 +178,7 @@ internal class SwarmOperations : ISwarmOperations
     async Task ISwarmOperations.UpdateSwarmAsync(SwarmUpdateParameters parameters, CancellationToken cancellationToken)
     {
         var query = new QueryString<SwarmUpdateParameters>(parameters);
-        var body = new JsonRequestContent<Spec>(parameters.Spec, DockerClient.JsonSerializer);
+        var body = JsonRequestContent.Create(Default.Spec, parameters.Spec);
         await _client.MakeRequestAsync(
             new ApiResponseErrorHandlingDelegate[]
             {
@@ -208,20 +209,20 @@ internal class SwarmOperations : ISwarmOperations
         {
             {
                 "X-Registry-Auth",
-                Convert.ToBase64String(DockerClient.JsonSerializer.SerializeToUtf8Bytes(authConfig))
+                Convert.ToBase64String(DockerClient.JsonSerializer.SerializeToUtf8Bytes(Default.AuthConfig, authConfig))
             }
         };
     }
 
     async Task<IEnumerable<NodeListResponse>> ISwarmOperations.ListNodesAsync(CancellationToken cancellationToken)
     {
-        return await _client.MakeRequestAsync<NodeListResponse[]>(new[] { SwarmResponseHandler }, HttpMethod.Get, "nodes", cancellationToken).ConfigureAwait(false);
+        return await _client.MakeRequestAsync(Default.NodeListResponseArray, new[] { SwarmResponseHandler }, HttpMethod.Get, "nodes", cancellationToken).ConfigureAwait(false);
     }
 
     async Task<NodeListResponse> ISwarmOperations.InspectNodeAsync(string id, CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(id)) throw new ArgumentNullException(nameof(id));
-        return await _client.MakeRequestAsync<NodeListResponse>(new[] { SwarmResponseHandler }, HttpMethod.Get, $"nodes/{id}", cancellationToken).ConfigureAwait(false);
+        return await _client.MakeRequestAsync(Default.NodeListResponse, new[] { SwarmResponseHandler }, HttpMethod.Get, $"nodes/{id}", cancellationToken).ConfigureAwait(false);
     }
 
     async Task ISwarmOperations.RemoveNodeAsync(string id, bool force, CancellationToken cancellationToken)
@@ -236,7 +237,7 @@ internal class SwarmOperations : ISwarmOperations
     {
         if (string.IsNullOrEmpty(id)) throw new ArgumentNullException(nameof(id));
         var query = new EnumerableQueryString("version", new[] { version.ToString() });
-        var body = new JsonRequestContent<NodeUpdateParameters>(parameters, DockerClient.JsonSerializer);
+        var body = JsonRequestContent.Create(Default.NodeUpdateParameters, parameters);
         await _client.MakeRequestAsync(new[] { SwarmResponseHandler }, HttpMethod.Post, $"nodes/{id}/update", query, body, cancellationToken);
     }
 }

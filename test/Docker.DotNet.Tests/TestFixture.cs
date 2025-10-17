@@ -190,7 +190,7 @@ public sealed class TestFixture : Progress<JSONMessage>, IAsyncLifetime, IDispos
     /// <inheritdoc />
     protected override void OnReport(JSONMessage value)
     {
-        var message = JsonSerializer.Instance.Serialize(value);
+        var message = JsonSerializer.Instance.Serialize(DockerClientSerializerContext.Default.JSONMessage, value);
         this.LogInformation("Progress: '{Progress}'.", message);
     }
 

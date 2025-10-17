@@ -7,28 +7,13 @@ internal class EnumerableQueryStringConverter : IQueryStringConverter
 {
     public bool CanConvert(Type t)
     {
-        return typeof (IEnumerable).GetTypeInfo().IsAssignableFrom(t.GetTypeInfo());
+        return typeof(IEnumerable<string>).IsAssignableFrom(t);
     }
 
     public string[] Convert(object o)
     {
-        Debug.Assert(o != null);
-        Debug.Assert(o is IEnumerable);
+        Debug.Assert(o is IEnumerable<string>);
 
-        var items = new List<string>();
-        foreach (var e in ((IEnumerable) o))
-        {
-            if (e is ValueType ||
-                e is string)
-            {
-                items.Add(e.ToString());
-            }
-            else
-            {
-                items.Add(JsonSerializer.Instance.Serialize(e));
-            }
-        }
-
-        return items.ToArray();
+        return ((IEnumerable<string>)o).ToArray();
     }
 }
